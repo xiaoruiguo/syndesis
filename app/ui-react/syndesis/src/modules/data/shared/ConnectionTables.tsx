@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 export interface IConnectionTablesProps {
   selectedSchemaNodes: SchemaNodeInfo[];
   columnDetails: ConnectionTable[];
+  connectionIcons: Map<string, React.ReactNode>;
   onNodeDeselected: (connectionName: string, teiidName: string) => void;
   setShowPreviewData: (connectionName: string, tableName: string) => void;
 }
@@ -65,6 +66,7 @@ export const ConnectionTables: React.FunctionComponent<IConnectionTablesProps> =
         <SelectedConnectionListView
           key={index}
           name={info.teiidName}
+          connectionIcon={props.connectionIcons.get(info.connectionName)}
           connectionName={info.connectionName}
           index={index}
           toggle={toggle}

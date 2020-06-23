@@ -39,7 +39,7 @@
     <deploy.archives>false</deploy.archives>
 
     <!-- Atlasmap version -->
-    <atlasmap.version>2.0.3</atlasmap.version>
+    <atlasmap.version>2.0.5</atlasmap.version>
 
     <!-- Image names -->
     <image.s2i>syndesis/syndesis-s2i:%l</image.s2i>
@@ -96,8 +96,10 @@
     <camel.version>3.1.0</camel.version>
     <camel-k-runtime.version>1.1.0</camel-k-runtime.version>
 
+    <undertow.version>2.0.30.Final</undertow.version>
+
     <!-- CXF version, to be kept in sync with the one referenced by camel version above -->
-    <cxf.version>3.3.5</cxf.version>
+    <cxf.version>3.3.6</cxf.version>
     <wss4j.version>2.2.2</wss4j.version>
 
     <!-- Don't fork based on cores, doesn't work nicely in the cloud -->
@@ -139,7 +141,7 @@
 
     <greenmail.version>1.5.11</greenmail.version>
 
-    <spring-security.version>5.3.2.RELEASE</spring-security.version>
+    <spring-security.version>5.3.3.RELEASE</spring-security.version>
     <resteasy.version>4.4.2.Final</resteasy.version>
     <resteasy-spring-boot-starter.version>4.4.0.Final</resteasy-spring-boot-starter.version>
 
@@ -2259,8 +2261,14 @@
 
       <dependency>
         <groupId>io.undertow</groupId>
+        <artifactId>undertow-core</artifactId>
+        <version>${undertow.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.undertow</groupId>
         <artifactId>undertow-servlet</artifactId>
-        <version>2.0.29.Final</version>
+        <version>${undertow.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.spec.javax.servlet</groupId>
@@ -2273,6 +2281,13 @@
         </exclusions>
       </dependency>
 
+      <dependency>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-websockets-jsr</artifactId>
+        <version>${undertow.version}</version>
+      </dependency>
+
+      <!-- TODO: Maybe import BOM ? -->
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core</artifactId>
@@ -2500,7 +2515,7 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-security</artifactId>
-        <version>2.1.4.RELEASE</version>
+        <version>2.2.2.RELEASE</version>
         <exclusions>
           <exclusion>
             <groupId>javax.xml.bind</groupId>
@@ -2533,7 +2548,7 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-zipkin</artifactId>
-        <version>2.2.2.RELEASE</version>
+        <version>2.2.3.RELEASE</version>
         <scope>runtime</scope>
         <exclusions>
           <exclusion>
@@ -2992,7 +3007,7 @@
       <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
-        <version>4.0.2</version>
+        <version>4.0.3</version>
         <scope>test</scope>
         <exclusions>
           <exclusion>
@@ -3026,7 +3041,7 @@
       <dependency>
         <groupId>net.javacrumbs.json-unit</groupId>
         <artifactId>json-unit-assertj</artifactId>
-        <version>2.17.0</version>
+        <version>2.18.1</version>
         <scope>test</scope>
       </dependency>
 

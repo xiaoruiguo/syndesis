@@ -3,6 +3,7 @@ import {
   Connection,
   SchemaNode,
   SchemaNodeInfo,
+  SourceSchema,
   VirtualizationSourceStatus,
 } from '@syndesis/models';
 import {
@@ -15,7 +16,7 @@ import { WithLoader } from '@syndesis/utils';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { UIContext } from '../../../app';
-import { ApiError, EntityIcon } from '../../../shared';
+import { ApiError } from '../../../shared';
 import resolvers from '../../resolvers';
 import {
   generateDvConnections,
@@ -24,6 +25,7 @@ import {
   getDvConnectionStatus,
   getDvConnectionStatusMessage,
   isDvConnectionLoading,
+  isDvConnectionVirtualizationSource
 } from './VirtualizationUtils';
 
 function getSortedConnections(
@@ -43,15 +45,6 @@ function getSortedConnections(
   return sortedConnections;
 }
 
-function getSchemaNodeInfos(schemaNodes: SchemaNode[], connName: string) {
-  const schemaNodeInfos: SchemaNodeInfo[] = [];
-  const rootNode = schemaNodes.find(node => node.name === connName);
-  if (rootNode) {
-    generateSchemaNodeInfos(schemaNodeInfos, rootNode, []);
-  }
-  return schemaNodeInfos;
-}
-
 export interface ILastRefreshMessage {
   connectionName: string;
   message: string;
@@ -59,18 +52,21 @@ export interface ILastRefreshMessage {
 
 export interface IConnectionSchemaContentProps {
   connections: Connection[];
+  connectionIcons: Map<string, React.ReactNode>;
   dvSourceStatuses: VirtualizationSourceStatus[];
   error: boolean;
   errorMessage?: string;
   loading: boolean;
   onNodeSelected: (
     connectionName: string,
+    isVirtualizationSchema: boolean,
     name: string,
     teiidName: string,
     nodePath: string[]
   ) => void;
   onNodeDeselected: (connectionName: string, teiidName: string) => void;
   selectedSchemaNodes: SchemaNodeInfo[];
+  virtualizationSchema: SourceSchema | undefined;
 }
 
 export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaContentProps> = props => {
@@ -84,13 +80,14 @@ export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaC
 
   const handleSourceSelectionChange = async (
     connectionName: string,
+    isVirtualizationSchema: boolean,
     name: string,
     teiidName: string,
     nodePath: string[],
     selected: boolean
   ) => {
     if (selected) {
-      props.onNodeSelected(connectionName, name, teiidName, nodePath);
+      props.onNodeSelected(connectionName, isVirtualizationSchema, name, teiidName, nodePath);
     } else {
       props.onNodeDeselected(connectionName, teiidName);
     }
@@ -209,6 +206,32 @@ export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaC
     return status ? status.teiidName : '';
   };
 
+  const getSchemaNodeInfos = (schemaNodes: SchemaNode[], connName: string, isVirtSource: boolean) => {
+    const schemaNodeInfos: SchemaNodeInfo[] = [];
+    // Connection source - generate from schemaNodes
+    if (!isVirtSource) {
+      const rootNode = schemaNodes.find(node => node.name === connName);
+      if (rootNode) {
+        generateSchemaNodeInfos(schemaNodeInfos, rootNode, []);
+      }
+    // Virtualization source - generate from runtime metadata
+    } else {
+      if (props.virtualizationSchema) {
+        for (const table of props.virtualizationSchema.tables) {
+          const nodeInfo = {
+            connectionName: props.virtualizationSchema.name,
+            isVirtualizationSchema: true,
+            name: table.name,
+            nodePath: [table.name],
+            teiidName: table.name,
+          };
+          schemaNodeInfos.push(nodeInfo);
+        }
+      }
+    }
+    return schemaNodeInfos;
+  }
+  
   return (
     <ConnectionSchemaList
       i18nEmptyStateInfo={t('activeConnectionsEmptyStateInfo')}
@@ -229,7 +252,8 @@ export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaC
         {() =>
           sortedConns.map((c, index) => {
             // get schema nodes for the connection
-            const srcInfos = getSchemaNodeInfos(schema, getConnectionTeiidName(c.name));
+            const isVirtSource = isDvConnectionVirtualizationSource(c);
+            const srcInfos = getSchemaNodeInfos(schema, getConnectionTeiidName(c.name), isVirtSource);
             return (
               <ConnectionSchemaListItem
                 key={index}
@@ -247,7 +271,8 @@ export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaC
                 i18nRefreshInProgress={t('refreshInProgress')}
                 i18nStatusErrorPopoverLink={t('connectionStatusPopoverLink')}
                 i18nStatusErrorPopoverTitle={t('connectionStatusPopoverTitle')}
-                icon={<EntityIcon entity={c} alt={c.name} width={23} />}
+                icon={props.connectionIcons.get(c.name)}
+                isVirtualizationSource={isVirtSource}
                 loading={isDvConnectionLoading(c)}
                 refreshConnectionSchema={handleRefreshSchema}
                 // tslint:disable-next-line: no-shadowed-variable
@@ -257,6 +282,7 @@ export const ConnectionSchemaContent: React.FunctionComponent<IConnectionSchemaC
                     name={info.name}
                     teiidName={info.teiidName}
                     connectionName={info.connectionName}
+                    isVirtualizationSchema={info.isVirtualizationSchema}
                     nodePath={info.nodePath}
                     selected={isTableSelected(info.connectionName, info.name)}
                     onSelectionChanged={handleSourceSelectionChange}

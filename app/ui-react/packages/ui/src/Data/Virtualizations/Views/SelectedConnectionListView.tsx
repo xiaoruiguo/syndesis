@@ -15,7 +15,6 @@ import {
   TextContent,
   TextVariants,
 } from '@patternfly/react-core';
-import { DatabaseIcon } from '@patternfly/react-icons';
 import { Table, TableBody, TableVariant } from '@patternfly/react-table';
 import * as React from 'react';
 import './SelectedConnectionListView.css';
@@ -23,6 +22,7 @@ import './SelectedConnectionListView.css';
 export interface ISelectedConnectionListViewProps {
   expanded: string[];
   name: string;
+  connectionIcon: React.ReactNode;
   connectionName: string;
   index: number;
   rows: string[][];
@@ -82,8 +82,8 @@ export const SelectedConnectionListView: React.FunctionComponent<ISelectedConnec
                     >
                       {props.name}
                     </span>
-                    (<DatabaseIcon />
-                    &nbsp;<span>{props.connectionName})</span>
+                    (&nbsp;{props.connectionIcon}
+                    &nbsp;<span>{props.connectionName}&nbsp;)</span>
                   </Text>
                 </TextContent>
               </DataListCell>,

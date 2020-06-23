@@ -1,10 +1,10 @@
 import { useApiConnectorSummary } from '@syndesis/api';
 import {
-  ApiConnectorCreateService,
   ApiConnectorCreatorBreadcrumb,
   ApiConnectorCreatorBreadSteps,
   ApiConnectorCreatorLayout,
   ApiConnectorCreatorSelectMethod,
+  ApiConnectorCreatorService,
   ApiConnectorCreatorToggleList,
 } from '@syndesis/ui';
 import { useRouteData } from '@syndesis/utils';
@@ -23,9 +23,11 @@ export const SelectMethodPage: React.FunctionComponent = () => {
   const onServiceConfigured = (service: string, port: string) => {
     history.push(
       resolvers.create.review({
+        configured: {
+          portName: port,
+          serviceName: service,
+        },
         connectorTemplateId,
-        portName: port,
-        serviceName: service,
         specification: spec,
       })
     );
@@ -93,12 +95,11 @@ export const SelectMethodPage: React.FunctionComponent = () => {
                       'apiClientConnectors:create:selectMethod:urlNote'
                     )}
                     onNext={onNext}
-                    allowFromScratch={false}
                   />
                 )}
                 {/* Where users can specify a SOAP service and port if connector is WSDL file */}
                 {showSoapConfig && apiSummary && (
-                  <ApiConnectorCreateService
+                  <ApiConnectorCreatorService
                     handleNext={onServiceConfigured}
                     i18nBtnNext={t('shared:Next')}
                     i18nPort={t('apiClientConnectors:create:soap:port')}
